@@ -15,6 +15,12 @@ st.title("🌾 AgroKalkulator Sugarcane Yield & Revenue Estimator")
 st.subheader("Otomatisasi Proyeksi Produktivitas dan Valuasi Ekonomi Tebu")
 st.markdown("---")
 
+# Cek Status Secrets Sementara
+st.sidebar.write("### Cek Status Secrets:")
+st.sidebar.write(f"- Gemini Key: {'Ada ✅' if st.secrets.get('GEMINI_API_KEY') else 'Kosong ❌'}")
+st.sidebar.write(f"- Bot Token: {'Ada ✅' if st.secrets.get('TELEGRAM_BOT_TOKEN') else 'Kosong ❌'}")
+st.sidebar.write(f"- Chat ID: {'Ada ✅' if st.secrets.get('TELEGRAM_CHAT_ID') else 'Kosong ❌'}")
+
 # ==========================================
 # 2. INISIALISASI & AUTO-DETECT GEMINI API
 # ==========================================
