@@ -23,7 +23,7 @@ try:
     if api_key:
         genai.configure(api_key=api_key)
         # Menggunakan versi latest untuk menghindari error 404 (Not Found)
-        model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        model = genai.GenerativeModel('gemini-pro')
     else:
         st.error("❌ ERROR: `GEMINI_API_KEY` tidak ditemukan di Secrets Streamlit.")
 except Exception as e:
