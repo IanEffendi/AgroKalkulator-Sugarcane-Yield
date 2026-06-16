@@ -56,12 +56,12 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. FUNGSI INTEGRASI TELEGRAM BOT (VERSI DEBUG)
+# 3. FUNGSI INTEGRASI TELEGRAM BOT (FIXED FORMATTING)
 # ==========================================
 def send_to_telegram(text_content):
     try:
         bot_token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
-        chat_id = str(st.secrets.get("TELEGRAM_CHAT_ID", "")).strip() # Pastikan menjadi string dan hapus spasi
+        chat_id = str(st.secrets.get("TELEGRAM_CHAT_ID", "")).strip()
         bot_token = bot_token.strip()
         
         if not bot_token or not chat_id:
@@ -69,19 +69,20 @@ def send_to_telegram(text_content):
             return False
             
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        
+        # PERBAIKAN: Menghapus "parse_mode": "Markdown" agar Telegram 
+        # menerima teks apa adanya tanpa gagal memproses simbol
         payload = {
             "chat_id": chat_id,
-            "text": text_content,
-            "parse_mode": "Markdown"
+            "text": text_content
         }
+        
         response = requests.post(url, json=payload)
         
-        # Cek apakah pengiriman sukses (Status 200 OK)
         if response.status_code == 200:
             return True
         else:
-            # Jika gagal, tampilkan pesan error asli dari Telegram di Sidebar!
-            st.sidebar.error(f"❌ Telegram Menolak Pengiriman!\n\nAlasan dari Telegram: {response.text}")
+            st.sidebar.error(f"❌ Telegram Menolak Pengiriman!\n\nAlasan: {response.text}")
             return False
             
     except Exception as e:
