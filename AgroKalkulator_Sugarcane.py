@@ -16,18 +16,38 @@ st.subheader("Otomatisasi Proyeksi Produktivitas dan Valuasi Ekonomi Tebu")
 st.markdown("---")
 
 # ==========================================
-# 2. INISIALISASI & KONFIGURASI GEMINI API
+# 2. INISIALISASI & AUTO-DETECT GEMINI API
 # ==========================================
 try:
     api_key = st.secrets.get("GEMINI_API_KEY", "")
     if api_key:
         genai.configure(api_key=api_key)
-        # Menggunakan versi latest untuk menghindari error 404 (Not Found)
-        model = genai.GenerativeModel('gemini-pro')
+        
+        # Mengambil daftar semua model yang didukung secara riil oleh API Key Anda
+        supported_models = [
+            m.name.replace("models/", "") 
+            for m in genai.list_models() 
+            if 'generateContent' in m.supported_generation_methods
+        ]
+        
+        if supported_models:
+            # Memprioritaskan gemini-3.5-flash sesuai permintaan, jika tidak ada pakai model pertama di list
+            if "gemini-3.5-flash" in supported_models:
+                terpilih = "gemini-3.5-flash"
+            else:
+                terpilih = supported_models[0] # Fallback otomatis yang pasti jalan
+                
+            model = genai.GenerativeModel(terpilih)
+            st.sidebar.success(f"✅ AI Terhubung! Menggunakan model: `{terpilih}`")
+        else:
+            st.error("❌ API Key valid, tetapi tidak ada model yang tersedia untuk generateContent di versi library ini.")
+            st.stop()
     else:
         st.error("❌ ERROR: `GEMINI_API_KEY` tidak ditemukan di Secrets Streamlit.")
+        st.stop()
 except Exception as e:
     st.error(f"❌ ERROR KONFIGURASI AI: {e}")
+    st.stop()
 
 # ==========================================
 # 3. FUNGSI INTEGRASI TELEGRAM BOT
@@ -38,7 +58,7 @@ def send_to_telegram(text_content):
         chat_id = st.secrets.get("TELEGRAM_CHAT_ID", "")
         
         if not bot_token or not chat_id:
-            st.warning("⚠️ Laporan belum terkirim ke Telegram karena `TELEGRAM_BOT_TOKEN` atau `TELEGRAM_CHAT_ID` kosong di Secrets.")
+            st.sidebar.warning("⚠️ Laporan tidak dikirim ke Telegram (Token/Chat ID kosong).")
             return False
             
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
@@ -50,7 +70,7 @@ def send_to_telegram(text_content):
         response = requests.post(url, json=payload)
         return response.status_code == 200
     except Exception as e:
-        st.error(f"❌ Gagal mengirim notifikasi ke Telegram: {e}")
+        st.sidebar.error(f"❌ Gagal mengirim Telegram: {e}")
         return False
 
 # ==========================================
@@ -148,7 +168,7 @@ if st.button("🚀 Jalankan Otomatisasi Proyeksi & Kirim Laporan"):
                 if terkirim:
                     st.success("✅ Laporan analisis berhasil dikirimkan ke Telegram!")
                 else:
-                    st.info("ℹ️ Laporan berhasil dibuat, namun pengiriman Telegram dilewati karena konfigurasi Secrets belum lengkap.")
+                    st.info("ℹ️ Laporan berhasil dibuat di layar. Pengiriman Telegram dilewati karena pengaturan Token di Secrets belum lengkap.")
                     
         except Exception as ai_err:
             st.error(f"❌ Terjadi kesalahan saat memproses API: {ai_err}")
