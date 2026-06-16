@@ -56,7 +56,7 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. FUNGSI INTEGRASI TELEGRAM BOT (FIXED FORMATTING)
+# 3. FUNGSI INTEGRASI TELEGRAM BOT (AUTO-SPLIT MESSAGE)
 # ==========================================
 def send_to_telegram(text_content):
     try:
@@ -70,20 +70,26 @@ def send_to_telegram(text_content):
             
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         
-        # PERBAIKAN: Menghapus "parse_mode": "Markdown" agar Telegram 
-        # menerima teks apa adanya tanpa gagal memproses simbol
-        payload = {
-            "chat_id": chat_id,
-            "text": text_content
-        }
+        # Batas aman karakter Telegram adalah 4096. Kita potong per 4000 karakter.
+        batas_karakter = 4000
+        potongan_teks = [text_content[i:i+batas_karakter] for i in range(0, len(text_content), batas_karakter)]
         
-        response = requests.post(url, json=payload)
+        status_pengiriman = True
         
-        if response.status_code == 200:
-            return True
-        else:
-            st.sidebar.error(f"❌ Telegram Menolak Pengiriman!\n\nAlasan: {response.text}")
-            return False
+        # Kirim setiap potongan teks secara berurutan
+        for bagian in potongan_teks:
+            payload = {
+                "chat_id": chat_id,
+                "text": bagian
+            }
+            response = requests.post(url, json=payload)
+            
+            if response.status_code != 200:
+                st.sidebar.error(f"❌ Telegram Menolak Pengiriman!\n\nAlasan: {response.text}")
+                status_pengiriman = False
+                break # Hentikan pengiriman jika ada satu bagian yang gagal
+                
+        return status_pengiriman
             
     except Exception as e:
         st.sidebar.error(f"❌ Terjadi kesalahan sistem: {e}")
