@@ -63,7 +63,6 @@ def send_to_telegram(text_content):
             payload = {
                 "chat_id": str(chat_id).strip(),
                 "text": text_content[i:i+4000]
-                st.sidebar.success(f"✅ Telegram Terhubung")
             }
             response = requests.post(url, json=payload)
             
