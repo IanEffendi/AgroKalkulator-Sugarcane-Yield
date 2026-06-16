@@ -56,43 +56,39 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. FUNGSI INTEGRASI TELEGRAM BOT (AUTO-SPLIT MESSAGE)
+# 3. FUNGSI INTEGRASI TELEGRAM BOT (VERSI RINGKAS)
 # ==========================================
 def send_to_telegram(text_content):
+    bot_token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
+    chat_id = st.secrets.get("TELEGRAM_CHAT_ID", "")
+
+    # 1. Cek apakah token dan chat ID sudah diisi
+    if not bot_token or not chat_id:
+        st.sidebar.warning("⚠️ Pengiriman dilewati: Token/Chat ID kosong di Secrets.")
+        return False
+
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+
     try:
-        bot_token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
-        chat_id = str(st.secrets.get("TELEGRAM_CHAT_ID", "")).strip()
-        bot_token = bot_token.strip()
-        
-        if not bot_token or not chat_id:
-            st.sidebar.warning("⚠️ Token/Chat ID kosong di Secrets.")
-            return False
-            
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        
-        # Batas aman karakter Telegram adalah 4096. Kita potong per 4000 karakter.
-        batas_karakter = 4000
-        potongan_teks = [text_content[i:i+batas_karakter] for i in range(0, len(text_content), batas_karakter)]
-        
-        status_pengiriman = True
-        
-        # Kirim setiap potongan teks secara berurutan
-        for bagian in potongan_teks:
+        # 2. Potong teks otomatis per 4000 karakter agar tidak ditolak Telegram
+        for i in range(0, len(text_content), 4000):
             payload = {
-                "chat_id": chat_id,
-                "text": bagian
+                "chat_id": str(chat_id).strip(), 
+                "text": text_content[i:i+4000]
             }
+            
+            # 3. Kirim pesan
             response = requests.post(url, json=payload)
             
+            # 4. Hentikan dan tampilkan eror jika ada satu pengiriman yang gagal
             if response.status_code != 200:
-                st.sidebar.error(f"❌ Telegram Menolak Pengiriman!\n\nAlasan: {response.text}")
-                status_pengiriman = False
-                break # Hentikan pengiriman jika ada satu bagian yang gagal
+                st.sidebar.error(f"❌ Telegram menolak pengiriman: {response.text}")
+                return False
                 
-        return status_pengiriman
-            
+        return True # Berhasil semua
+        
     except Exception as e:
-        st.sidebar.error(f"❌ Terjadi kesalahan sistem: {e}")
+        st.sidebar.error(f"❌ Error sistem Telegram: {e}")
         return False
 
 # ==========================================
