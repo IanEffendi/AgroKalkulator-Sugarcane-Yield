@@ -33,7 +33,7 @@ try:
         if supported_models:
             terpilih = "gemini-3.5-flash" if "gemini-3.5-flash" in supported_models else supported_models[0]
             model = genai.GenerativeModel(terpilih)
-            st.sidebar.success(f"✅ AI Terhubung: `{terpilih}`")
+            st.sidebar.success(f"✅ AI Terhubung")
         else:
             st.error("❌ Tidak ada model yang tersedia di API Key ini.")
             st.stop()
