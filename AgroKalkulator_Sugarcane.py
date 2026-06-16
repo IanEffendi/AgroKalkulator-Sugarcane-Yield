@@ -56,15 +56,16 @@ except Exception as e:
     st.stop()
 
 # ==========================================
-# 3. FUNGSI INTEGRASI TELEGRAM BOT
+# 3. FUNGSI INTEGRASI TELEGRAM BOT (VERSI DEBUG)
 # ==========================================
 def send_to_telegram(text_content):
     try:
         bot_token = st.secrets.get("TELEGRAM_BOT_TOKEN", "")
-        chat_id = st.secrets.get("TELEGRAM_CHAT_ID", "")
+        chat_id = str(st.secrets.get("TELEGRAM_CHAT_ID", "")).strip() # Pastikan menjadi string dan hapus spasi
+        bot_token = bot_token.strip()
         
         if not bot_token or not chat_id:
-            st.sidebar.warning("⚠️ Laporan tidak dikirim ke Telegram (Token/Chat ID kosong).")
+            st.sidebar.warning("⚠️ Token/Chat ID kosong di Secrets.")
             return False
             
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
@@ -74,9 +75,17 @@ def send_to_telegram(text_content):
             "parse_mode": "Markdown"
         }
         response = requests.post(url, json=payload)
-        return response.status_code == 200
+        
+        # Cek apakah pengiriman sukses (Status 200 OK)
+        if response.status_code == 200:
+            return True
+        else:
+            # Jika gagal, tampilkan pesan error asli dari Telegram di Sidebar!
+            st.sidebar.error(f"❌ Telegram Menolak Pengiriman!\n\nAlasan dari Telegram: {response.text}")
+            return False
+            
     except Exception as e:
-        st.sidebar.error(f"❌ Gagal mengirim Telegram: {e}")
+        st.sidebar.error(f"❌ Terjadi kesalahan sistem: {e}")
         return False
 
 # ==========================================
