@@ -31,7 +31,7 @@ Distribusi Laporan Terintegrasi: Hasil analisis tidak hanya ditampilkan di layar
 
 Link Github
 
-https://github.com/[masukkan_username_anda_disini]/AgroKalkulator-Sugarcane
+[https://github.com/[masukkan_username_anda_disini]/AgroKalkulator-Sugarcan](https://github.com/IanEffendi/AgroKalkulator-Sugarcane-Yield)e
 (Catatan: Pastikan repositori GitHub Anda bersifat Publik dan sudah berisi file AgroKalkulator_Sugarcane.py, requirements.txt, serta file README.md)
 
 UI (User Interface) chatbot
